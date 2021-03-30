@@ -11,9 +11,9 @@ Leverages the [webex-node-bot-framework](https://github.com/WebexSamples/webex-n
 2. Deploy the app using a hosting solution or via Docker
 3. Define the following Environment Variables (or .env file)
 - WEBHOOK_URL=https://yourbotdomain.com/framework
-- TOKEN=<token from developer.webex.com>
+- TOKEN=replace-with-your-token-from-developers-dot-webex-dot-com
 - PORT=3000
-- SECRET=replacemwithasecretstring
+- SECRET=replace-me-with-a-secret-string
 4. Run the bot and add to spaces as needed
 5. Enjoy!
 
