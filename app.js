@@ -8,18 +8,20 @@ let config;
 // Load Config
 try {
   // Try Load from ENV
-  if (process.env.WEBHOOK_URL) {
+  if (process.env.TOKEN) {
     debug('Load from ENV');
   } else {
     debug('Load from .env');
     dotenv.config();
   }
   config = {
-    webhookUrl: process.env.WEBHOOK_URL,
     token: process.env.TOKEN,
-    port: process.env.PORT || 3000,
-    webhookSecret: process.env.SECRET || 'replacemwithasecretstring',
   };
+  if (process.env.WEBHOOK_URL) {
+    config.webhookUrl = process.env.WEBHOOK_URL;
+    config.port = process.env.PORT || 3000;
+    config.webhookSecret = process.env.SECRET || 'replacemwithasecretstring';
+  }
 } catch (error) {
   debug(`Error: ${error}`);
 }
@@ -45,6 +47,7 @@ function checkModeration(bot, callback) {
   if (!bot.room.isLocked) {
     debug('room is not locked');
     callback(true);
+    return;
   }
 
   bot.framework.webex.memberships
