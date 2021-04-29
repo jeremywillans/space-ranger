@@ -1,26 +1,31 @@
-# spaceranger
+# space-ranger
 
-Webex Space Ranger Bot used to identify and remove participants from a space if they are not part of the same organisation as the registered Bot.
-Allows organisations to have spaces without the need for moderation, but still keeping it contained to internal users.
-
-Leverages the [webex-node-bot-framework](https://github.com/WebexSamples/webex-node-bot-framework)
+Webex Space Ranger Bot used to identify and remove participants from a space if they are not part of the same organization as the registered Bot.
+Allows organizations to have spaces without the need for moderation, but still keeping it contained to internal users.
 
 ## Deployment
+1. Register a Bot at [Webex Developers](https://developer.webex.com/my-apps) for your Organization
+2. Build and Deploy Docker Container (or deploy to Cloud)
 
-1. Register a Bot at [Webex Developers](https://developer.webex.com/my-apps) for your Organisation
-2. Deploy the app using a hosting solution or via Docker
-3. Define the following Environment Variables (or .env file)
-- WEBHOOK_URL=https://yourbotdomain.com/framework
-- TOKEN=replace-with-your-token-from-developer-dot-webex-dot-com
-- PORT=3000
-- SECRET=replace-me-with-a-secret-string
-4. Run the bot and add to spaces as needed
-5. Enjoy!
+    **Note:** Webhook, Secret and Port can be omitted if you want to use Websockets.
+
+    ```
+    > docker build --tag space-ranger .
+    > docker create --name space-ranger \
+      -e TOKEN=bot-token-from-developer-dot-webex-dot-com \
+      (optional) -e WEBHOOK_URL=https://yourdomain.com/framework \
+      (optional) -e SECRET=replace-me-with-a-secret-string \
+      (optional) -e PORT=3000 \
+      (optional) -e GUIDE_EMAILS=comma-separated-list-of-people-required-in-space-for-bot-to-function \
+      space-ranger
+
+3. Verify Docker logs to ensure bot as started successfully.
 
 ## Support
-
 In case you've found a bug, please [open an issue on GitHub](../../issues).
 
-## Disclamer
+## Credits
+Leverages the [webex-node-bot-framework](https://github.com/WebexSamples/webex-node-bot-framework)
 
+## Disclaimer
 This script is NOT guaranteed to be bug free and production quality.
