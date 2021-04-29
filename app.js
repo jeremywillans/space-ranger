@@ -1,6 +1,6 @@
 const Framework = require('webex-node-bot-framework');
 const webhook = require('webex-node-bot-framework/webhook');
-const debug = require('debug')('spaceranger:app');
+const debug = require('debug')('space-ranger:app');
 const dotenv = require('dotenv');
 const express = require('express');
 
@@ -16,67 +16,51 @@ try {
   }
   config = {
     token: process.env.TOKEN,
+    // removeDeviceRegistrationsOnStart: true,
+    messageFormat: 'markdown',
   };
   if (process.env.WEBHOOK_URL) {
     config.webhookUrl = process.env.WEBHOOK_URL;
     config.port = process.env.PORT || 3000;
-    config.webhookSecret = process.env.SECRET || 'replacemwithasecretstring';
+    // eslint-disable-next-line operator-linebreak
+    config.webhookSecret =
+      process.env.SECRET || 'replace-me-with-a-secret-string';
+  }
+  if (process.env.GUIDE_EMAILS) {
+    config.guideEmails = process.env.GUIDE_EMAILS;
+    config.membershipRulesDisallowedResponse = '';
+    config.membershipRulesStateMessageResponse = '';
+    config.membershipRulesAllowedResponse = '';
+    debug(`Guide Mode Enabled: ${config.guideEmails}`);
   }
 } catch (error) {
   debug(`Error: ${error}`);
 }
 
-// init express
-const app = express();
-app.use(express.json());
+let app;
+// Init Express, if configured
+if (config.webhookUrl) {
+  app = express();
+  app.use(express.json());
+}
 
-// init framework
+// Init Framework
 const framework = new Framework(config);
 framework.start();
 
-// An initialized event means your webhooks are all registered and the
-// framework has created a bot object for all the spaces your bot is in
+// Framework Initialized
 framework.on('initialized', () => {
-  framework.debug('Framework initialized successfully! [Press CTRL-C to quit]');
   debug('Framework initialized successfully! [Press CTRL-C to quit]');
 });
-
-// Check for Bot Moderation Status
-function checkModeration(bot, callback) {
-  // Is Room Moderated?
-  if (!bot.room.isLocked) {
-    debug('room is not locked');
-    callback(true);
-    return;
-  }
-
-  bot.framework.webex.memberships
-    .list({ roomId: bot.room.id })
-    .then((memberships) => {
-      // Check if Bot is Moderator
-      const botModerator = memberships.items
-        .filter((item) => item.isModerator === true)
-        .filter((item) => item.personId === bot.person.id);
-      if (botModerator.length === 1) {
-        debug('checkmod: bot is a moderator');
-        callback(true);
-      } else {
-        // Not a Moderator
-        debug('checkmod: bot is not a moderator');
-        callback(false);
-      }
-    });
-}
 
 // Perform Room Sync against assigned Org
 function syncRoom(bot) {
   debug('execute syncRoom');
-
   // Pull Room Memberships
   bot.framework.webex.memberships
     .list({ roomId: bot.room.id })
     .then((memberships) => {
-      // Count Space Orgs
+      // Count Space Organizations
       const orgEntries = memberships.items
         .map((value) => value.personOrgId)
         .filter((value, index, _arr) => _arr.indexOf(value) === index);
@@ -91,8 +75,9 @@ function syncRoom(bot) {
               return;
             }
             debug(`Attempting to remove ${item.personEmail} from the space`);
-            bot.framework.webex.memberships
-              .remove(item)
+            bot.remove(item.personEmail)
+            // bot.framework.webex.memberships
+            //  .remove(item)
               .then(() => {
                 bot.say(
                   `${item.personDisplayName} has been removed from this space as they are from a different Organization`,
@@ -111,33 +96,24 @@ function syncRoom(bot) {
     });
 }
 
-// A spawn event is generated when the framework finds a space with your bot in it
-// You can use the bot object to send messages to that space
-// The id field is the id of the framework
-// If addedBy is set, it means that a user has added your bot to a new space
-// Otherwise, this bot was in the space before this server instance started
-framework.on('spawn', (bot, id, addedBy) => {
+// Handle Spawn Event
+framework.on('spawn', (bot, _id, addedBy) => {
   if (!addedBy) {
-    // don't say anything here or your bot's spaces will get
+    // don't say anything here or your bots spaces will get
     // spammed every time your server is restarted
-    framework.debug(
-      `Framework created an object for an existing bot in a space called: ${bot.room.title}`,
-    );
+    debug(`Execute spawn in existing space called: ${bot.room.title}`);
   } else {
     debug('new room');
     // addedBy is the ID of the user who just added our bot to a new space,
     if (bot.room.type === 'group') {
       // Check for Moderation Status
-      checkModeration(bot, (result) => {
-        if (!result) {
-          debug('Bot is not moderator in moderated room');
-          bot.say({
-            markdown: `<@personId:${addedBy}>, Please make me a moderator so I can function correctly.`,
-          });
-        } else {
-          syncRoom(bot);
-        }
-      });
+      if (bot.isLocked && !bot.isModerator) {
+        bot.say(
+          `<@personId:${addedBy}>, Please make me a moderator so I can function correctly.`,
+        );
+      } else {
+        syncRoom(bot);
+      }
     } else {
       bot.say('To Infinity and Beyond!');
     }
@@ -147,115 +123,100 @@ framework.on('spawn', (bot, id, addedBy) => {
 // Event when room is set to Moderated
 framework.on('roomLocked', (bot) => {
   debug('trigger roomLocked');
-
   // Check for Moderation Status
-  checkModeration(bot, (result) => {
-    if (!result) {
-      debug('Bot is not moderator in moderated room');
-      bot.say('Please make me a moderator so I can function correctly.');
-    }
-  });
-});
-
-framework.on('memberAddedAsModerator', (bot, membership) => {
-  debug('trigger memAddMod');
-
-  // Am I the new Moderator?
-  if (bot.person.id === membership.personId) {
-    debug('bot added as moderator, running SyncRoom');
-    syncRoom(bot);
+  if (bot.isLocked && !bot.isModerator) {
+    debug('Bot is not moderator in moderated room');
+    bot.say('Please make me a moderator so I can function correctly.');
   }
 });
 
-// Event when room is set to Moderated
-framework.on('memberRemovedAsModerator', (bot, membership) => {
-  debug('trigger memRemMod');
+framework.on('botAddedAsModerator', (bot) => {
+  debug('trigger botModAdd');
+  // Execute Sync Room
+  bot.say('Reviewing Space report now...');
+  syncRoom(bot);
+});
 
-  // Am I no longer a Moderator?
-  if (bot.person.id === membership.personId) {
-    debug('bot removed as moderator, abort!');
-    bot.say(
-      'Attention! You have removed me as moderator! Please rectify so I can function correctly.',
-    );
+framework.on('botRemovedAsModerator', (bot) => {
+  debug('trigger botModRem');
+  // If room is still moderated, prompt.
+  if (bot.isLocked) {
+    bot.say('Please make me a moderator so I can function correctly.');
   }
 });
 
-// Evaulate Sync based on Mention
+// Evaluate Sync based on Mention
 framework.hears(/.*/gim, (bot, trigger) => {
   debug('trigger hears');
-
   if (bot.room.type === 'group') {
-    bot.say(
-      'Hello %s!, reviewing Space report now...',
-      trigger.person.displayName,
-    );
+    bot.say(`<@personId:${trigger.person.id}>, reviewing Space report now...`);
     // Check for Moderation Status
-    checkModeration(bot, (result) => {
-      if (!result) {
-        debug('Bot is not moderator in moderated room');
-        bot.say(
-          "I'm sorry, I cannot function yet as I am not a moderator in this room.",
-        );
-      } else {
-        // Execute Sync Room
-        syncRoom(bot);
-      }
-    });
+    if (bot.isLocked && !bot.isModerator) {
+      bot.say(
+        `<@personId:${trigger.person.id}>, Please make me a moderator so I can function correctly.`,
+      );
+    } else {
+      syncRoom(bot);
+    }
   } else {
-    bot.say('Hello %s!', trigger.person.displayName);
+    bot.say(`Hello ${trigger.person.displayName}!`);
   }
 });
 
 framework.on('memberEnters', (bot, trigger) => {
   debug('trigger memberEnters');
-
   // Check for Moderation Status
-  checkModeration(bot, (result) => {
-    if (!result) {
-      debug('Bot is not moderator in moderated room');
-      bot.say(
-        "I'm sorry, I cannot function yet as I am not a moderator in this room.",
-      );
-    } else {
-      if (trigger.personId === bot.id) {
-        debug('bot added to room, attempting sync');
-        syncRoom(bot);
-      }
-
-      // Check if new member is from correct Org
-      if (trigger.personOrgId !== bot.person.orgId) {
-        debug(`Attempting to remove ${trigger.personEmail} from the space`);
-        bot.framework.webex.memberships
-          .remove(trigger)
-          .then(() => {
-            bot.say(
-              `${trigger.personDisplayName} has been removed from this space as they are from a different Organization`,
-            );
-            debug(`${trigger.personEmail} removed!`);
-          })
-          .catch((error) => {
-            debug(`unable to remove! ${error}`);
-            bot.say(
-              `I'm sorry, something went wrong when trying to remove ${trigger.personDisplayName}. Please mention me to try again`,
-            );
-          });
-      }
+  if (bot.isLocked && !bot.isModerator) {
+    debug('Bot is not moderator in moderated room');
+    bot.say(
+      "I'm sorry, I cannot function yet as I am not a moderator in this room.",
+    );
+  } else {
+    if (trigger.personId === bot.id) {
+      debug('bot added to room, attempting sync');
+      syncRoom(bot);
     }
+
+    // Check if new member is from correct Org
+    if (trigger.personOrgId !== bot.person.orgId) {
+      debug(`Attempting to remove ${trigger.personEmail} from the space`);
+      bot.remove(trigger.personEmail)
+      // bot.framework.webex.memberships
+      //  .remove(trigger)
+        .then(() => {
+          bot.say(
+            `${trigger.personDisplayName} has been removed from this space as they are from a different Organization`,
+          );
+          debug(`${trigger.personEmail} removed!`);
+        })
+        .catch((error) => {
+          debug(`unable to remove! ${error}`);
+          bot.say(
+            `I'm sorry, something went wrong when trying to remove ${trigger.personDisplayName}. Please mention me to try again`,
+          );
+        });
+    }
+  }
+});
+
+let server;
+// Init Server, if configured
+if (config.webhookUrl) {
+  // Define Express Path for Incoming Webhooks
+  app.post('/framework', webhook(framework));
+
+  // Start Express Server
+  server = app.listen(config.port, () => {
+    framework.debug('Framework listening on port %s', config.port);
   });
-});
+}
 
-// define express path for incoming webhooks
-app.post('/framework', webhook(framework));
-
-// start express server
-const server = app.listen(config.port, () => {
-  framework.debug('Framework listening on port %s', config.port);
-});
-
-// gracefully shutdown (ctrl-c)
+// Gracefully Shutdown (CTRL+C)
 process.on('SIGINT', () => {
-  framework.debug('stoppping...');
-  server.close();
+  framework.debug('Stopping...');
+  if (config.webhookUrl) {
+    server.close();
+  }
   framework.stop().then(() => {
     process.exit();
   });
