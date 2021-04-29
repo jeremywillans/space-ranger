@@ -207,13 +207,13 @@ if (config.webhookUrl) {
 
   // Start Express Server
   server = app.listen(config.port, () => {
-    framework.debug('Framework listening on port %s', config.port);
+    debug(`Framework listening on port ${config.port}`);
   });
 }
 
 // Gracefully Shutdown (CTRL+C)
 process.on('SIGINT', () => {
-  framework.debug('Stopping...');
+  debug('Stopping...');
   if (config.webhookUrl) {
     server.close();
   }
