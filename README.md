@@ -16,7 +16,7 @@ Allows organizations to have spaces without the need for moderation, but still k
       (optional) -e WEBHOOK_URL=https://yourdomain.com/framework \
       (optional) -e SECRET=replace-me-with-a-secret-string \
       (optional) -e PORT=3000 \
-      (optional) -e GUIDE_EMAILS=comma-separated-list-of-people-required-in-space-for-bot-to-function \
+      (optional) -e GUIDE_EMAILS=comma-separated-list-of-person-in-space-to-function \
       space-ranger
 
 3. Verify Docker logs to ensure bot as started successfully.

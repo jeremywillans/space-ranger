@@ -1,0 +1,24 @@
+const debug = require('debug')('space-ranger:hears');
+const { syncRoom } = require('./functions.js');
+
+module.exports = (framework) => {
+  // Evaluate Sync based on Mention
+  framework.hears(/.*/gim, (bot, trigger) => {
+    debug('trigger hears');
+    if (bot.room.type === 'group') {
+      bot.say(
+        `<@personId:${trigger.person.id}>, reviewing Space report now...`,
+      );
+      // Check for Moderation Status
+      if (bot.isLocked && !bot.isModerator) {
+        bot.say(
+          `<@personId:${trigger.person.id}>, Please make me a moderator so I can function correctly.`,
+        );
+      } else {
+        syncRoom(bot);
+      }
+    } else {
+      bot.say(`Hello ${trigger.person.displayName}!`);
+    }
+  });
+};
