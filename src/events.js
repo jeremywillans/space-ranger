@@ -1,6 +1,5 @@
 const debug = require('debug')('space-ranger:events');
-const { removeUser } = require('./functions.js');
-const utils = require('./functions.js');
+const { syncRoom, removeUser, postDebug } = require('./functions.js');
 
 module.exports = (framework) => {
   // Room Locked Event
@@ -18,7 +17,7 @@ module.exports = (framework) => {
     debug('trigger botModAdd');
     // Execute Sync Room
     bot.say('Reviewing Space report now...');
-    utils.syncRoom(bot);
+    syncRoom(framework, bot);
   });
 
   // Bot Removed Moderator Event
@@ -42,14 +41,20 @@ module.exports = (framework) => {
     } else {
       if (trigger.personId === bot.id) {
         debug('bot added to room, attempting sync');
-        utils.syncRoom(bot);
+        syncRoom(framework, bot);
       }
 
       // Check if new member is from correct Org
       if (trigger.personOrgId !== bot.person.orgId) {
         debug(`Attempting to remove ${trigger.personEmail} from the space`);
-        removeUser(bot, trigger);
+        removeUser(framework, bot, trigger);
       }
     }
+  });
+
+  // Bot Removed Event
+  framework.on('despawn', (bot) => {
+    debug('trigger botDespawn');
+    postDebug(framework, bot, 'bot-remove');
   });
 };

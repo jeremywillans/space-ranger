@@ -15,7 +15,7 @@ module.exports = (framework) => {
           `<@personId:${trigger.person.id}>, Please make me a moderator so I can function correctly.`,
         );
       } else {
-        syncRoom(bot);
+        syncRoom(framework, bot);
       }
     } else {
       bot.say(`Hello ${trigger.person.displayName}!`);

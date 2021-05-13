@@ -17,6 +17,7 @@ Allows organizations to have spaces without the need for moderation, but still k
       (optional) -e SECRET=replace-me-with-a-secret-string \
       (optional) -e PORT=3000 \
       (optional) -e GUIDE_EMAILS=comma-separated-list-of-person-in-space-to-function \
+      (optional) -e DEBUG_SPACE=room-id-of-space-for-space-ranger-debug-output \
       space-ranger
 
 3. Verify Docker logs to ensure bot as started successfully.

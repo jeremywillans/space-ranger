@@ -4,7 +4,7 @@ const debug = require('debug')('space-ranger:app');
 const dotenv = require('dotenv');
 const express = require('express');
 const path = require('path');
-const utils = require('./src/functions.js');
+const { syncRoom, postDebug } = require('./src/functions.js');
 
 let config;
 // Load Config
@@ -71,8 +71,9 @@ framework.on('spawn', (bot, _id, addedBy) => {
           `<@personId:${addedBy}>, Please make me a moderator so I can function correctly.`,
         );
       } else {
-        utils.syncRoom(bot);
+        syncRoom(bot);
       }
+      postDebug(framework, bot, 'bot-add');
     } else {
       bot.say('To Infinity and Beyond!');
     }
