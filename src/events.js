@@ -6,7 +6,7 @@ module.exports = (framework) => {
   framework.on('roomLocked', (bot) => {
     debug('trigger roomLocked');
     // Check for Moderation Status
-    if (bot.isLocked && !bot.isModerator) {
+    if (bot.room.isLocked && !bot.isModerator) {
       debug('Bot is not moderator in moderated room');
       bot.say('Please make me a moderator so I can function correctly.');
     }
@@ -16,7 +16,7 @@ module.exports = (framework) => {
   framework.on('botAddedAsModerator', (bot) => {
     debug('trigger botModAdd');
     // Execute Sync Room
-    bot.say('Reviewing Space report now...');
+    bot.say('Reviewing Space membership now...');
     syncRoom(framework, bot);
   });
 
@@ -24,7 +24,8 @@ module.exports = (framework) => {
   framework.on('botRemovedAsModerator', (bot) => {
     debug('trigger botModRem');
     // If room is still moderated, prompt.
-    if (bot.isLocked) {
+    if (bot.room.isLocked) {
+      debug('Bot removed as moderator in moderated room');
       bot.say('Please make me a moderator so I can function correctly.');
     }
   });
@@ -33,7 +34,7 @@ module.exports = (framework) => {
   framework.on('memberEnters', (bot, trigger) => {
     debug('trigger memberEnters');
     // Check for Moderation Status
-    if (bot.isLocked && !bot.isModerator) {
+    if (bot.room.isLocked && !bot.isModerator) {
       debug('Bot is not moderator in moderated room');
       bot.say(
         "I'm sorry, I cannot function yet as I am not a moderator in this room.",

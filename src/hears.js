@@ -7,7 +7,7 @@ module.exports = (framework) => {
     debug('trigger hears');
     if (bot.room.type === 'group') {
       bot.say(
-        `<@personId:${trigger.person.id}>, reviewing Space report now...`,
+        `<@personId:${trigger.person.id}>, reviewing Space membership now...`,
       );
       // Check for Moderation Status
       if (bot.isLocked && !bot.isModerator) {
