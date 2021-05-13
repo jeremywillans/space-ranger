@@ -16,7 +16,7 @@ Allows organizations to have spaces without the need for moderation, but still k
       (optional) -e WEBHOOK_URL=https://yourdomain.com/framework \
       (optional) -e SECRET=replace-me-with-a-secret-string \
       (optional) -e PORT=3000 \
-      (optional) -e GUIDE_EMAILS=comma-separated-list-of-person-in-space-to-function \
+      (optional) -e GUIDE_EMAILS=comma-separated-list-of-someone-needed-in-space-to-function \
       (optional) -e DEBUG_SPACE=room-id-of-space-for-space-ranger-debug-output \
       space-ranger
 
