@@ -8,24 +8,24 @@ function utils() {
         const buff = Buffer.from(bot.room.id, 'base64');
         const base64 = buff.toString('utf-8');
         const roomUid = base64.slice(base64.lastIndexOf('/') + 1);
-        let htmlMessage;
+        let messageContent;
         switch (type) {
           case 'bot-add':
-            htmlMessage = `I have been added to <a href="webexteams://im?space=${roomUid}">${bot.room.title}</a>`;
+            messageContent = `I have been added to [${bot.room.title}](webexteams://im?space=${roomUid})`;
             break;
           case 'bot-remove':
-            htmlMessage = `I have been removed from <a href="webexteams://im?space=${roomUid}">${bot.room.title}</a>`;
+            messageContent = `I have been removed from [${bot.room.title}](webexteams://im?space=${roomUid})`;
             break;
           case 'user-remove':
-            htmlMessage = `Removed ${person.personDisplayName} from <a href="webexteams://im?space=${roomUid}">${bot.room.title}</a>`;
+            messageContent = `Removed ${person.personDisplayName} from [${bot.room.title}](webexteams://im?space=${roomUid})`;
             break;
           case 'user-error':
-            htmlMessage = `Unable to removed ${person.personDisplayName} from <a href="webexteams://im?space=${roomUid}">${bot.room.title}</a>`;
+            messageContent = `Unable to removed ${person.personDisplayName} from [${bot.room.title}](webexteams://im?space=${roomUid})`;
             break;
           default:
-            htmlMessage = 'Unknown Error';
+            messageContent = 'Unknown Error';
         }
-        debugBot.say('html', htmlMessage);
+        debugBot.say(messageContent);
         debug('debug sent');
       }
     }
@@ -36,8 +36,7 @@ function utils() {
       .remove(person.personEmail)
       .then(() => {
         bot.say(
-          'html',
-          `<a href='webexteams://im?email=${person.personEmail}'>${person.personDisplayName}</a> has been removed. (Different Org)`,
+          `[${person.personDisplayName}](webexteams://im?email=${person.personEmail}) has been removed. (Different Org)`,
         );
         debug(`${person.personEmail} removed!`);
         postDebug(framework, bot, 'user-remove', person);
@@ -45,8 +44,7 @@ function utils() {
       .catch((error) => {
         debug(`unable to remove! ${error.message}`);
         bot.say(
-          'html',
-          `I'm sorry, something went wrong when trying to remove <a href='webexteams://im?email=${person.personEmail}'>${person.personDisplayName}</a>. Please mention me to try again`,
+          `I'm sorry, something went wrong when trying to remove [${person.personDisplayName}](webexteams://im?email=${person.personEmail}'). Please mention me to try again`,
         );
         postDebug(framework, bot, 'user-error', person);
       });

@@ -66,7 +66,7 @@ framework.on('spawn', (bot, _id, addedBy) => {
     // addedBy is the ID of the user who just added our bot to a new space,
     if (bot.room.type === 'group') {
       // Check for Moderation Status
-      if (bot.isLocked && !bot.isModerator) {
+      if (bot.room.isLocked && !bot.isModerator) {
         bot.say(
           `<@personId:${addedBy}>, Please make me a moderator so I can function correctly.`,
         );

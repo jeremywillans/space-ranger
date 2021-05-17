@@ -10,7 +10,7 @@ module.exports = (framework) => {
         `<@personId:${trigger.person.id}>, reviewing Space membership now...`,
       );
       // Check for Moderation Status
-      if (bot.isLocked && !bot.isModerator) {
+      if (bot.room.isLocked && !bot.isModerator) {
         bot.say(
           `<@personId:${trigger.person.id}>, Please make me a moderator so I can function correctly.`,
         );
