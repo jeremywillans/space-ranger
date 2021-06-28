@@ -62,14 +62,13 @@ function utils() {
 
   // Get Memberships
   async function getMemberships(bot) {
-    let results = [];
     const memberships = await bot.framework.webex.memberships.list({
       roomId: bot.room.id,
       max: 1000,
     });
-    const outputArray = [];
-    outputArray.push(memberships.items);
+    let results = memberships.items;
     if (memberships.hasNext()) {
+      const outputArray = [];
       await getMore(outputArray, memberships);
       outputArray.forEach((item) => {
         results = results.concat(item);
