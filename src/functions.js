@@ -90,15 +90,14 @@ function utils() {
       debug(`Org Space Count: ${orgEntries.length}`);
       // Review users if more than one Org identified
       if (orgEntries.length > 1) {
-        memberships.forEach((item) => {
-          if (item.personOrgId !== bot.person.orgId) {
-            if (item.personId === bot.person.id) {
-              debug('Skipping bot from removal');
-              return;
-            }
-            debug(`Attempting to remove ${item.personEmail} from the space`);
-            removeUser(framework, bot, item);
+        const filtered = memberships.filter((item) => item.personOrgId !== bot.person.orgId);
+        filtered.forEach((item) => {
+          if (item.personId === bot.person.id) {
+            debug('Skipping bot from removal');
+            return;
           }
+          debug(`Attempting to remove ${item.personEmail} from the space`);
+          removeUser(framework, bot, item);
         });
       }
     } catch (error) {
