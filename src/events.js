@@ -1,5 +1,5 @@
 const debug = require('debug')('space-ranger:events');
-const { syncRoom, removeUser, postDebug } = require('./functions.js');
+const { syncRoom, removeUser, postDebug } = require('./functions');
 
 module.exports = (framework) => {
   // Room Locked Event

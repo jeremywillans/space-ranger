@@ -1,5 +1,5 @@
 const debug = require('debug')('space-ranger:hears');
-const { syncRoom } = require('./functions.js');
+const { syncRoom } = require('./functions');
 
 module.exports = (framework) => {
   // Evaluate Sync based on Mention

@@ -4,7 +4,7 @@ const debug = require('debug')('space-ranger:app');
 const dotenv = require('dotenv');
 const express = require('express');
 const path = require('path');
-const { syncRoom, postDebug } = require('./src/functions.js');
+const { syncRoom, postDebug } = require('./src/functions');
 
 let config;
 // Load Config
