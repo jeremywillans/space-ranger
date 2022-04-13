@@ -31,21 +31,27 @@ function utils() {
     }
   }
   // Remove User from Room
-  function removeUser(framework, bot, person) {
+  function removeUser(framework, bot, person, replyId) {
     bot
       .remove(person.personEmail)
       .then(() => {
-        bot.say(
-          `[${person.personDisplayName}](webexteams://im?email=${person.personEmail}) has been removed. (Different Org)`,
-        );
+        const message = `[${person.personDisplayName}](webexteams://im?email=${person.personEmail}) has been removed. (Different Org)`;
+        if (replyId) {
+          bot.reply(replyId, message);
+        } else {
+          bot.say(message);
+        }
         debug(`${person.personEmail} removed!`);
         postDebug(framework, bot, 'user-remove', person);
       })
       .catch((error) => {
         debug(`unable to remove! ${error.message}`);
-        bot.say(
-          `I'm sorry, something went wrong when trying to remove [${person.personDisplayName}](webexteams://im?email=${person.personEmail}'). Please mention me to try again`,
-        );
+        const message = `I'm sorry, something went wrong when trying to remove [${person.personDisplayName}](webexteams://im?email=${person.personEmail}'). Please mention me to try again`;
+        if (replyId) {
+          bot.reply(replyId, message);
+        } else {
+          bot.say(message);
+        }
         postDebug(framework, bot, 'user-error', person);
       });
   }
@@ -78,7 +84,7 @@ function utils() {
   }
 
   // Perform Room Sync against assigned Org
-  async function syncRoom(framework, bot) {
+  async function syncRoom(framework, bot, replyId) {
     debug('execute syncRoom');
     try {
       // Pull Room Memberships
@@ -91,14 +97,16 @@ function utils() {
       // Review users if more than one Org identified
       if (orgEntries.length > 1) {
         const filtered = memberships.filter((item) => item.personOrgId !== bot.person.orgId);
-        filtered.forEach((item) => {
-          if (item.personId === bot.person.id) {
-            debug('Skipping bot from removal');
-            return;
-          }
-          debug(`Attempting to remove ${item.personEmail} from the space`);
-          removeUser(framework, bot, item);
-        });
+        await Promise.all(
+          filtered.map(async (item) => {
+            if (item.personId === bot.person.id) {
+              debug('Skipping bot from removal');
+              return;
+            }
+            debug(`Attempting to remove ${item.personEmail} from the space`);
+            removeUser(framework, bot, item, replyId);
+          }),
+        );
       }
     } catch (error) {
       debug(error.message);
