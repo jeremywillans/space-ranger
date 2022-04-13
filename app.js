@@ -72,7 +72,7 @@ framework.on('spawn', (bot, _id, addedBy) => {
           `<@personId:${addedBy}>, Please make me a moderator so I can function correctly.`,
         );
       } else {
-        syncRoom(bot);
+        syncRoom(framework, bot);
       }
       postDebug(framework, bot, 'bot-add');
     } else {
