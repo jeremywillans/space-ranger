@@ -61,6 +61,7 @@ framework.on('spawn', (bot, _id, addedBy) => {
     // don't say anything here or your bots spaces will get
     // spammed every time your server is restarted
     debug(`Execute spawn in existing space called: ${bot.room.title}`);
+    syncRoom(framework, bot);
   } else {
     debug('new room');
     // addedBy is the ID of the user who just added our bot to a new space,
