@@ -44,6 +44,7 @@ function utils() {
           bot.say(message);
         }
         logger.debug(`${person.personEmail} removed!`);
+        logger.debug({ message: `action=remove email=${person.personEmail} roomId=${bot.room.id}`, labels: { type: 'event' } });
         postDebug(framework, bot, 'user-remove', person);
       })
       .catch((error) => {
@@ -110,6 +111,7 @@ function utils() {
           }),
         );
       }
+      logger.debug({ message: `action=sync roomId=${bot.room.id}`, labels: { type: 'event' } });
     } catch (error) {
       logger.error(error.message);
     }
