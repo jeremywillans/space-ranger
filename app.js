@@ -1,21 +1,13 @@
 const Framework = require('webex-node-bot-framework');
 const webhook = require('webex-node-bot-framework/webhook');
-const debug = require('debug')('space-ranger:app');
-const dotenv = require('dotenv');
 const express = require('express');
 const path = require('path');
 const { syncRoom, postDebug } = require('./src/functions');
+const logger = require('./src/logger')('entrypoint');
 
 let config;
 // Load Config
 try {
-  // Try Load from ENV
-  if (process.env.TOKEN) {
-    debug('Load from ENV');
-  } else {
-    debug('Load from .env');
-    dotenv.config();
-  }
   config = {
     token: process.env.TOKEN,
     // removeDeviceRegistrationsOnStart: true,
@@ -33,10 +25,10 @@ try {
     config.membershipRulesDisallowedResponse = '';
     config.membershipRulesStateMessageResponse = '';
     config.membershipRulesAllowedResponse = '';
-    debug(`Guide Mode Enabled: ${config.guideEmails}`);
+    logger.info(`Guide Mode Enabled: ${config.guideEmails}`);
   }
 } catch (error) {
-  debug(`Error: ${error}`);
+  logger.error(`Error: ${error}`);
 }
 
 let app;
@@ -52,7 +44,7 @@ framework.start();
 
 // Framework Initialized
 framework.on('initialized', () => {
-  debug('Framework initialized successfully! [Press CTRL-C to quit]');
+  logger.info('Framework initialized successfully! [Press CTRL-C to quit]');
 });
 
 // Handle Spawn Event
@@ -60,10 +52,10 @@ framework.on('spawn', (bot, _id, addedBy) => {
   if (!addedBy) {
     // don't say anything here or your bots spaces will get
     // spammed every time your server is restarted
-    debug(`Execute spawn in existing space called: ${bot.room.title}`);
+    logger.debug(`Execute spawn in existing space called: ${bot.room.title}`);
     syncRoom(framework, bot);
   } else {
-    debug('new room');
+    logger.debug('new room');
     // addedBy is the ID of the user who just added our bot to a new space,
     if (bot.room.type === 'group') {
       // Check for Moderation Status
@@ -93,13 +85,13 @@ if (config.webhookUrl) {
 
   // Start Express Server
   server = app.listen(config.port, () => {
-    debug(`Framework listening on port ${config.port}`);
+    logger.info(`Framework listening on port ${config.port}`);
   });
 }
 
 // Gracefully Shutdown (CTRL+C)
 process.on('SIGINT', () => {
-  debug('Stopping...');
+  logger.info('Stopping...');
   if (config.webhookUrl) {
     server.close();
   }

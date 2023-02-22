@@ -1,20 +1,20 @@
-const debug = require('debug')('space-ranger:events');
+const logger = require('./logger')('events');
 const { syncRoom, removeUser, postDebug } = require('./functions');
 
 module.exports = (framework) => {
   // Room Locked Event
   framework.on('roomLocked', (bot) => {
-    debug('trigger roomLocked');
+    logger.debug('trigger roomLocked');
     // Check for Moderation Status
     if (bot.room.isLocked && !bot.isModerator) {
-      debug('Bot is not moderator in moderated room');
+      logger.debug('Bot is not moderator in moderated room');
       bot.say('Please make me a moderator so I can function correctly.');
     }
   });
 
   // Bot Added Moderator Event
   framework.on('botAddedAsModerator', (bot) => {
-    debug('trigger botModAdd');
+    logger.debug('trigger botModAdd');
     // Execute Sync Room
     bot.say('Reviewing Space membership now...');
     syncRoom(framework, bot);
@@ -22,32 +22,32 @@ module.exports = (framework) => {
 
   // Bot Removed Moderator Event
   framework.on('botRemovedAsModerator', (bot) => {
-    debug('trigger botModRem');
+    logger.debug('trigger botModRem');
     // If room is still moderated, prompt.
     if (bot.room.isLocked) {
-      debug('Bot removed as moderator in moderated room');
+      logger.debug('Bot removed as moderator in moderated room');
       bot.say('Please make me a moderator so I can function correctly.');
     }
   });
 
   // Member Enters Event
   framework.on('memberEnters', (bot, trigger) => {
-    debug('trigger memberEnters');
+    logger.debug('trigger memberEnters');
     // Check for Moderation Status
     if (bot.room.isLocked && !bot.isModerator) {
-      debug('Bot is not moderator in moderated room');
+      logger.debug('Bot is not moderator in moderated room');
       bot.say(
         "I'm sorry, I cannot function yet as I am not a moderator in this room.",
       );
     } else {
       if (trigger.personId === bot.id) {
-        debug('bot added to room, attempting sync');
+        logger.debug('bot added to room, attempting sync');
         syncRoom(framework, bot);
       }
 
       // Check if new member is from correct Org
       if (trigger.personOrgId !== bot.person.orgId) {
-        debug(`Attempting to remove ${trigger.personEmail} from the space`);
+        logger.debug(`Attempting to remove ${trigger.personEmail} from the space`);
         removeUser(framework, bot, trigger);
       }
     }
@@ -55,7 +55,7 @@ module.exports = (framework) => {
 
   // Bot Removed Event
   framework.on('despawn', (bot) => {
-    debug('trigger botDespawn');
+    logger.debug('trigger botDespawn');
     postDebug(framework, bot, 'bot-remove');
   });
 };

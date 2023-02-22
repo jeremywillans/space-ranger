@@ -1,10 +1,10 @@
-const debug = require('debug')('space-ranger:hears');
+const logger = require('./logger')('hears');
 const { syncRoom } = require('./functions');
 
 module.exports = (framework) => {
   // Evaluate Sync based on Mention
   framework.hears(/.*/gim, (bot, trigger) => {
-    debug('trigger hears');
+    logger.debug('trigger hears');
     if (bot.room.type === 'group') {
       const command = trigger.message.html.replace(/^.*spark-mention> (.*)<\/p>$/, '$1').split(' ')[0];
       switch (true) {
