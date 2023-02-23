@@ -69,8 +69,6 @@ framework.on('spawn', (bot, _id, addedBy) => {
         syncRoom(framework, bot);
       }
       postDebug(framework, bot, 'bot-add');
-    } else {
-      bot.say('To Infinity and Beyond!');
     }
   }
 });
