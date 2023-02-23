@@ -111,7 +111,6 @@ function utils() {
           }),
         );
       }
-      logger.debug({ message: `action=sync roomId=${bot.room.id}`, labels: { type: 'event' } });
     } catch (error) {
       logger.error(error.message);
     }
